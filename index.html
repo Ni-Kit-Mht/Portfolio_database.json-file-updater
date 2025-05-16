@@ -15,6 +15,8 @@
     }
 
     .controls {
+      display: flex;
+      flex-direction: column;
       padding: 10px;
       background: #fff;
       box-shadow: 0 0 5px rgba(0,0,0,0.1);
@@ -51,6 +53,7 @@
 
   <div class="controls">
     <button onclick="startCamera()">Take Photo</button>
+    <br>
     <input type="text" id="photoName" placeholder="Rename photo..." />
     <button onclick="renamePhoto()">Rename</button>
 
@@ -60,8 +63,7 @@
       <option value="webp">WEBP</option>
     </select>
 
-    <button onclick="uploadPhoto()">Upload Photo</button>
-    <button onclick="deletePhoto()">Delete Photo</button>
+    <button id = "upload-button" onclick="uploadPhoto()">Upload Photo</button>
   </div>
 
   <div id="preview">
@@ -70,7 +72,9 @@
 
   <video id="video" autoplay></video>
   <canvas id="canvas" style="display:none;"></canvas>
-
+    <div class="controls">
+    <button id = "delete-button" onclick="deletePhoto()">Delete Photo</button>
+    </div>
   <script>
     const video = document.getElementById('video');
     const canvas = document.getElementById('canvas');
