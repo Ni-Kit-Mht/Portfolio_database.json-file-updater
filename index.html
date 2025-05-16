@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Photo Capture Tool</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      background: #f4f4f4;
+    }
+
+    .controls {
+      padding: 10px;
+      background: #fff;
+      box-shadow: 0 0 5px rgba(0,0,0,0.1);
+      z-index: 10;
+    }
+
+    .controls input,
+    .controls select,
+    .controls button {
+      margin: 5px;
+      padding: 8px;
+    }
+
+    #preview {
+      flex-grow: 1;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      overflow: hidden;
+    }
+
+    #preview img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+    }
+
+    video {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="controls">
+    <button onclick="startCamera()">Take Photo</button>
+    <input type="text" id="photoName" placeholder="Rename photo..." />
+    <button onclick="renamePhoto()">Rename</button>
+
+    <select id="format">
+      <option value="jpg">JPG</option>
+      <option value="png">PNG</option>
+      <option value="webp">WEBP</option>
+    </select>
+
+    <button onclick="uploadPhoto()">Upload Photo</button>
+    <button onclick="deletePhoto()">Delete Photo</button>
+  </div>
+
+  <div id="preview">
+    <p>No photo captured yet.</p>
+  </div>
+
+  <video id="video" autoplay></video>
+  <canvas id="canvas" style="display:none;"></canvas>
+
+  <script>
+    const video = document.getElementById('video');
+    const canvas = document.getElementById('canvas');
+    const preview = document.getElementById('preview');
+    let currentBlob = null;
+    let currentName = 'photo';
+
+    function startCamera() {
+      navigator.mediaDevices.getUserMedia({ video: true })
+        .then(stream => {
+          video.srcObject = stream;
+          setTimeout(() => takeSnapshot(), 2000); // auto-take snapshot after 2 sec
+        })
+        .catch(err => alert('Camera error: ' + err));
+    }
+
+    function takeSnapshot() {
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+      canvas.getContext('2d').drawImage(video, 0, 0);
+      video.srcObject.getTracks().forEach(track => track.stop());
+
+      const format = document.getElementById('format').value;
+      const mimeType = `image/${format === 'jpg' ? 'jpeg' : format}`;
+
+      canvas.toBlob(blob => {
+        currentBlob = blob;
+        displayImage(blob);
+      }, mimeType, 0.95);
+    }
+
+    function displayImage(blob) {
+      const img = document.createElement('img');
+      img.src = URL.createObjectURL(blob);
+      preview.innerHTML = '';
+      preview.appendChild(img);
+    }
+
+    function renamePhoto() {
+      const name = document.getElementById('photoName').value.trim();
+      if (name) {
+        currentName = name;
+        alert(`Photo renamed to "${currentName}"`);
+      } else {
+        alert('Enter a valid name.');
+      }
+    }
+
+function uploadPhoto() {
+  if (!currentBlob) return alert('No photo to upload.');
+
+  const format = document.getElementById('format').value;
+  const filename = `${currentName}.${format}`;
+
+  // Create a temporary link to download the image
+  const url = URL.createObjectURL(currentBlob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+
+  alert(`Photo "${filename}" is ready to download.`);
+}
+
+
+    function deletePhoto() {
+      preview.innerHTML = '<p>No photo captured yet.</p>';
+      currentBlob = null;
+      currentName = 'photo';
+    }
+  </script>
+
+</body>
+</html>
