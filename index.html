@@ -78,14 +78,31 @@
     let currentBlob = null;
     let currentName = 'photo';
 
-    function startCamera() {
-      navigator.mediaDevices.getUserMedia({ video: true })
-        .then(stream => {
-          video.srcObject = stream;
-          setTimeout(() => takeSnapshot(), 2000); // auto-take snapshot after 2 sec
-        })
-        .catch(err => alert('Camera error: ' + err));
-    }
+function startCamera() {
+  // Create a hidden file input if not already created
+  let fileInput = document.getElementById('cameraInput');
+  if (!fileInput) {
+    fileInput = document.createElement('input');
+    fileInput.type = 'file';
+    fileInput.accept = 'image/*';
+    fileInput.capture = 'environment'; // use 'user' for front camera if desired
+    fileInput.id = 'cameraInput';
+    fileInput.style.display = 'none';
+
+    fileInput.addEventListener('change', event => {
+      const file = event.target.files[0];
+      if (file) {
+        currentBlob = file;
+        displayImage(file);
+      }
+      fileInput.value = ''; // reset input
+    });
+
+    document.body.appendChild(fileInput);
+  }
+  fileInput.click();
+}
+
 
     function takeSnapshot() {
       canvas.width = video.videoWidth;
