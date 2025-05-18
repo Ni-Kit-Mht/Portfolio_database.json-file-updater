@@ -207,41 +207,47 @@ function uploadPhoto() {
 }
 
     async function uploadToFirebase() {
-    if (!currentBlob) return alert('No photo to upload to Firebase.');
+  if (!currentBlob) return alert('No photo to upload to Firebase.');
 
-    const reader = new FileReader();
-    reader.onloadend = async () => {
-      const base64data = reader.result;
+  const customKey = prompt("Enter a custom field name (unique key) for the image:");
+  if (!customKey || !customKey.trim()) {
+    alert("Invalid field name.");
+    return;
+  }
 
-      // Import Firebase functions into this scope
-      const { getDatabase, ref, push, set } = await import('https://www.gstatic.com/firebasejs/11.7.3/firebase-database.js');
-      const { initializeApp } = await import('https://www.gstatic.com/firebasejs/11.7.3/firebase-app.js');
+  const reader = new FileReader();
+  reader.onloadend = async () => {
+    const base64data = reader.result;
 
-      const firebaseConfig = {
-        apiKey: "AIzaSyCSyihPKxSmuUJbedOV1ewY4jDawx82A7k",
-        authDomain: "shop-image-stock.firebaseapp.com",
-        databaseURL: "https://shop-image-stock-default-rtdb.asia-southeast1.firebasedatabase.app",
-        projectId: "shop-image-stock",
-        storageBucket: "shop-image-stock.firebasestorage.app",
-        messagingSenderId: "107558527883",
-        appId: "1:107558527883:web:2de05fb836083be933058e",
-        measurementId: "G-FLG563FFZY"
-      };
+    const { getDatabase, ref, set } = await import('https://www.gstatic.com/firebasejs/11.7.3/firebase-database.js');
+    const { initializeApp } = await import('https://www.gstatic.com/firebasejs/11.7.3/firebase-app.js');
 
-      const app = initializeApp(firebaseConfig);
-      const db = getDatabase(app);
-
-      const imageRef = push(ref(db, 'Images'));
-      await set(imageRef, {
-        name: currentName,
-        dataUrl: base64data
-      });
-
-      alert('Image uploaded to Firebase Realtime Database.');
+    const firebaseConfig = {
+      apiKey: "AIzaSyCSyihPKxSmuUJbedOV1ewY4jDawx82A7k",
+      authDomain: "shop-image-stock.firebaseapp.com",
+      databaseURL: "https://shop-image-stock-default-rtdb.asia-southeast1.firebasedatabase.app",
+      projectId: "shop-image-stock",
+      storageBucket: "shop-image-stock.firebasestorage.app",
+      messagingSenderId: "107558527883",
+      appId: "1:107558527883:web:2de05fb836083be933058e",
+      measurementId: "G-FLG563FFZY"
     };
 
-    reader.readAsDataURL(currentBlob); // Convert blob to base64
-  }
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+
+    const imageRef = ref(db, `Images/${customKey}`);
+    await set(imageRef, {
+      name: currentName,
+      dataUrl: base64data
+    });
+
+    alert(`Image uploaded under key: "${customKey}"`);
+  };
+
+  reader.readAsDataURL(currentBlob);
+}
+
 
 
     function deletePhoto() {
