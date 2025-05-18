@@ -56,6 +56,8 @@
   <div class="controls">
     <button onclick="startCamera()">Take Photo</button>
     <br>
+        <button onclick="cropAndResizeImage()">Crop & Resize to 1080x1080</button>
+
     <input type="text" id="photoName" placeholder="Rename photo..." />
     <button onclick="renamePhoto()">Rename</button>
 
@@ -109,6 +111,40 @@ function startCamera() {
     document.body.appendChild(fileInput);
   }
   fileInput.click();
+}
+
+    function cropAndResizeImage() {
+  if (!currentBlob) {
+    alert('No photo to crop.');
+    return;
+  }
+
+  const img = new Image();
+  img.onload = () => {
+    const minSize = Math.min(img.width, img.height);
+    const cropX = (img.width - minSize) / 2;
+    const cropY = (img.height - minSize) / 2;
+
+    // Set canvas to 1080x1080
+    canvas.width = 1080;
+    canvas.height = 1080;
+    const ctx = canvas.getContext('2d');
+
+    // Draw cropped area scaled to 1080x1080
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.drawImage(img, cropX, cropY, minSize, minSize, 0, 0, 1080, 1080);
+
+    const format = document.getElementById('format').value;
+    const mimeType = `image/${format === 'jpg' ? 'jpeg' : format}`;
+
+    canvas.toBlob(blob => {
+      currentBlob = blob;
+      displayImage(blob);
+      alert('Image cropped and resized to 1080x1080.');
+    }, mimeType, 0.95);
+  };
+
+  img.src = URL.createObjectURL(currentBlob);
 }
 
 
