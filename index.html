@@ -70,6 +70,8 @@
     <div class="controls">
 
     <button id = "upload-button" onclick="uploadPhoto()">Upload Photo</button>
+      <button onclick="uploadToFirebase()">To-Firebase</button>
+
   </div>
 
   <div id="preview">
@@ -81,7 +83,12 @@
     <div class="controls">
     <button id = "delete-button" onclick="deletePhoto()">Delete Photo</button>
     </div>
+  <script type = "module">
+        import { getDatabase, ref, push, set } from "https://www.gstatic.com/firebasejs/11.7.3/firebase-database.js";
+
+  </script>
   <script>
+
     const video = document.getElementById('video');
     const canvas = document.getElementById('canvas');
     const preview = document.getElementById('preview');
@@ -198,6 +205,43 @@ function uploadPhoto() {
 
   alert(`Photo "${filename}" is ready to download.`);
 }
+
+    async function uploadToFirebase() {
+    if (!currentBlob) return alert('No photo to upload to Firebase.');
+
+    const reader = new FileReader();
+    reader.onloadend = async () => {
+      const base64data = reader.result;
+
+      // Import Firebase functions into this scope
+      const { getDatabase, ref, push, set } = await import('https://www.gstatic.com/firebasejs/11.7.3/firebase-database.js');
+      const { initializeApp } = await import('https://www.gstatic.com/firebasejs/11.7.3/firebase-app.js');
+
+      const firebaseConfig = {
+        apiKey: "AIzaSyCSyihPKxSmuUJbedOV1ewY4jDawx82A7k",
+        authDomain: "shop-image-stock.firebaseapp.com",
+        databaseURL: "https://shop-image-stock-default-rtdb.asia-southeast1.firebasedatabase.app",
+        projectId: "shop-image-stock",
+        storageBucket: "shop-image-stock.firebasestorage.app",
+        messagingSenderId: "107558527883",
+        appId: "1:107558527883:web:2de05fb836083be933058e",
+        measurementId: "G-FLG563FFZY"
+      };
+
+      const app = initializeApp(firebaseConfig);
+      const db = getDatabase(app);
+
+      const imageRef = push(ref(db, 'Images'));
+      await set(imageRef, {
+        name: currentName,
+        dataUrl: base64data
+      });
+
+      alert('Image uploaded to Firebase Realtime Database.');
+    };
+
+    reader.readAsDataURL(currentBlob); // Convert blob to base64
+  }
 
 
     function deletePhoto() {
